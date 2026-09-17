@@ -76,9 +76,15 @@ st.divider()
 # ==========================================
 st.header("🌳 섹션 2. 장르 및 영화별 총 관객 수 분포 (트리맵)")
 
-# Plotly 트리맵 생성 (계층 구조: 전체 -> 장르 -> 영화명)
+# 트리맵용 데이터 정제: 총 관객 수가 0보다 크고 장르-영화명 중복이 없도록 그룹화 집계
+treemap_df = (
+    df[df["total_audi"] > 0]
+    .groupby(["genre", "movieNm"], as_index=False)["total_audi"]
+    .sum()
+)
+
 fig2 = px.treemap(
-    df,
+    treemap_df,
     path=[px.Constant("전체 장르"), "genre", "movieNm"],
     values="total_audi",
     title="🎬 장르 및 영화별 총 관객 수 비중",
