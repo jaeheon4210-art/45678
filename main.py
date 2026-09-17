@@ -181,3 +181,153 @@ st.info(
     "개봉일 스크린수가 많을수록 대체로 총 관객수도 증가하는 비례 관계를 보이지만, "
     "적은 스크린수로 시작해 입소문으로 높은 흥행을 거둔 이외작이나 초기 스크린 대비 아쉬운 성적을 거둔 사례도 함께 확인 가능함."
 )
+
+st.divider()
+
+# ==========================================
+# 📌 구역 5: 주요 장르별 총 관객 수 분포 (박스플롯)
+# ==========================================
+st.header("📦 섹션 5. 주요 장르별 총 관객 수 분포 (박스플롯)")
+
+genre_counts_series = df["genre"].value_counts()
+top_genres = genre_counts_series[genre_counts_series >= 10].index.tolist()
+filtered_df = df[df["genre"].isin(top_genres)]
+
+fig5 = px.box(
+    filtered_df,
+    x="genre",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    title="🎬 영화 10편 이상 주요 장르별 총 관객 수 분포",
+    labels={"genre": "장르", "total_audi": "총 관객 수 (명)"},
+    points="outliers"
+)
+
+fig5.update_traces(
+    hovertemplate="<b>영화명:</b> %{hovertext}<br><b>총 관객수:</b> %{y:,}명<extra></extra>"
+)
+
+fig5.update_layout(
+    xaxis_title="장르 (10편 이상)",
+    yaxis_title="총 관객 수 (명)",
+    showlegend=False
+)
+
+st.plotly_chart(fig5, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "주요 장르별 관객 수의 중간값과 일반적인 분포 범위를 비교할 수 있으며, "
+    "상자 밖으로 튀어나온 이상치(Outlier) 점들을 통해 장르 평균 성적을 압도적으로 뛰어넘은 대형 흥행작을 쉽게 식별할 수 있음."
+)
+
+st.divider()
+
+# ==========================================
+# 📌 구역 6: 스크린수·총관객수·첫주관객수 관계 (버블 차트)
+# ==========================================
+st.header("🫧 섹션 6. 스크린수·총관객수·첫주관객수 관계 (버블 차트)")
+
+fig6 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    size="first_week_audi",
+    color="genre",
+    hover_name="movieNm",
+    size_max=40,
+    title="🎬 개봉일 스크린수 대비 총 관객수 및 첫 주 관객수 분포",
+    labels={
+        "first_scrn": "개봉일 스크린수 (개)",
+        "total_audi": "총 관객 수 (명)",
+        "first_week_audi": "첫 주 관객 수 (명)",
+        "genre": "장르"
+    }
+)
+
+fig6.update_traces(
+    hovertemplate="<b>영화명:</b> %{hovertext}<br><b>개봉일 스크린수:</b> %{x:,}개<br><b>총 관객수:</b> %{y:,}명<br><b>첫 주 관객수:</b> %{marker.size:,}명<extra></extra>"
+)
+
+fig6.update_layout(
+    xaxis_title="개봉일 스크린수 (개)",
+    yaxis_title="총 관객 수 (명)",
+    legend_title_text="장르"
+)
+
+st.plotly_chart(fig6, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "버블의 크기를 통해 개봉 첫 주 관객 동원력을 시각적으로 비교할 수 있으며, "
+    "첫 주 관객 비중이 커서 빠르게 흥행을 거둔 영화와 후반 장기 흥행(입소문)으로 총 관객수를 채운 영화를 쉽게 구분할 수 있음."
+)
+
+st.divider()
+
+# ==========================================
+# 📌 구역 7: 제작 국가 및 장르별 영화 편수 (선버스트 차트)
+# ==========================================
+st.header("☀️ 섹션 7. 제작 국가 및 장르별 영화 편수 분포 (선버스트)")
+
+fig7 = px.sunburst(
+    df,
+    path=["nation", "genre"],
+    title="🎬 제작 국가 및 장르별 영화 편수 계층 구조",
+    labels={"nation": "제작 국가", "genre": "장르"}
+)
+
+fig7.update_traces(
+    hovertemplate="<b>%{label}</b><br><b>영화 편수:</b> %{value}편<extra></extra>"
+)
+
+fig7.update_layout(
+    margin=dict(t=50, l=10, r=10, b=10)
+)
+
+st.plotly_chart(fig7, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "국가별 개봉작 수의 비중과 함께 각 국가가 어떤 장르 위주로 한국 박스오피스 상위권에 진입했는지 계층적 구조로 비교 파악할 수 있음."
+)
+
+st.divider()
+
+# ==========================================
+# 📌 구역 8: 10위권 체류 일수와 총 관객수의 관계 (산점도)
+# ==========================================
+st.header("🎯 섹션 8. 10위권에 오래 머문 영화는 총 관객도 많은가")
+
+fig8 = px.scatter(
+    df,
+    x="days_in_top10",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    title="10위권에 오래 머문 영화는 총 관객도 많은가",
+    labels={
+        "days_in_top10": "10위권에 머문 날수 (일)",
+        "total_audi": "총 관객 수 (명)",
+        "genre": "장르"
+    }
+)
+
+fig8.update_traces(
+    hovertemplate="<b>영화명:</b> %{hovertext}<br><b>10위권 머문 날수:</b> %{x}일<br><b>총 관객수:</b> %{y:,}명<extra></extra>"
+)
+
+fig8.update_layout(
+    xaxis_title="10위권에 머문 날수 (일)",
+    yaxis_title="총 관객 수 (명)",
+    legend_title_text="장르"
+)
+
+st.plotly_chart(fig8, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "10위권 체류 일수가 길수록 대체로 총 관객수도 증가하는 양의 상관관계를 보이지만, "
+    "짧은 기간 관객을 폭발적으로 모은 단기 흥행작이나 오랜 체류 대비 관객 폭이 넓지 않았던 작품 사례도 함께 확인 가능함."
+)
