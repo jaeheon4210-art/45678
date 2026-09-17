@@ -18,8 +18,11 @@ def load_data():
     url = "https://raw.githubusercontent.com/greatsong/modudata/main/data/kobis_movies.csv"
     df = pd.read_csv(url)
     
-    # 장르 열 전처리: 세로막대(|)로 구분된 복수 장르 중 첫 번째 장르만 추출
-    df["genre"] = df["genre"].astype(str).str.split("|").str[0].str.strip()
+    # 장르 및 국가 결측치 및 빈 문자열 처리
+    df["genre"] = df["genre"].fillna("기타").astype(str).str.split("|").str[0].str.strip()
+    df["genre"] = df["genre"].replace("", "기타")
+    df["nation"] = df["nation"].fillna("기타").astype(str).str.strip()
+    df["nation"] = df["nation"].replace("", "기타")
     
     # 수치형 데이터 캐스팅
     numeric_columns = ["first_scrn", "first_show", "first_week_audi", "total_audi", "days_in_top10"]
@@ -271,11 +274,15 @@ st.divider()
 # ==========================================
 st.header("☀️ 섹션 7. 제작 국가 및 장르별 영화 편수 분포 (선버스트)")
 
+# 계층 구조 데이터 생성 시 중복 제거 및 그룹화 집계 적용
+sunburst_df = df.groupby(["nation", "genre"], as_index=False).size()
+
 fig7 = px.sunburst(
-    df,
+    sunburst_df,
     path=["nation", "genre"],
+    values="size",
     title="🎬 제작 국가 및 장르별 영화 편수 계층 구조",
-    labels={"nation": "제작 국가", "genre": "장르"}
+    labels={"nation": "제작 국가", "genre": "장르", "size": "영화 편수"}
 )
 
 fig7.update_traces(
