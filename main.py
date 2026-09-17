@@ -76,7 +76,6 @@ st.divider()
 # ==========================================
 st.header("🌳 섹션 2. 장르 및 영화별 총 관객 수 분포 (트리맵)")
 
-# 트리맵용 데이터 정제 (총 관객 수 0 초과 및 중복 처리)
 treemap_df = (
     df[df["total_audi"] > 0]
     .groupby(["genre", "movieNm"], as_index=False)["total_audi"]
@@ -113,12 +112,10 @@ st.divider()
 # ==========================================
 st.header("📊 섹션 3. 총 관객 수 분포 (히스토그램)")
 
-# 최다 관객 동원 영화 자동 추출
 top_movie_row = df.loc[df["total_audi"].idxmax()]
 top_movie_name = top_movie_row["movieNm"]
 top_movie_audi = top_movie_row["total_audi"]
 
-# Plotly 히스토그램 생성
 fig3 = px.histogram(
     df,
     x="total_audi",
@@ -144,4 +141,43 @@ st.info(
     f"💡 **이 그래프로 알 수 있는 것:** "
     f"대부분의 영화가 관객 수 50만 명 이하의 하위 구간에 밀집해 있는 극단적인 롱테일 양상을 보임. "
     f"기간 내 가장 많은 관객을 동원한 최상위 영화는 '{top_movie_name}'({top_movie_audi:,}명)임."
+)
+
+st.divider()
+
+# ==========================================
+# 📌 구역 4: 개봉일 스크린수와 총 관객수의 관계 (산점도)
+# ==========================================
+st.header("🎯 섹션 4. 개봉일 스크린수 대비 총 관객수 관계")
+
+fig4 = px.scatter(
+    df,
+    x="first_scrn",
+    y="total_audi",
+    color="genre",
+    hover_name="movieNm",
+    title="🎬 개봉일 스크린수 대비 총 관객수 분포 (장르별 색상)",
+    labels={
+        "first_scrn": "개봉일 스크린수 (개)",
+        "total_audi": "총 관객 수 (명)",
+        "genre": "장르"
+    }
+)
+
+fig4.update_traces(
+    hovertemplate="<b>영화명:</b> %{hovertext}<br><b>개봉일 스크린수:</b> %{x:,}개<br><b>총 관객수:</b> %{y:,}명<extra></extra>"
+)
+
+fig4.update_layout(
+    xaxis_title="개봉일 스크린수 (개)",
+    yaxis_title="총 관객 수 (명)",
+    legend_title_text="장르"
+)
+
+st.plotly_chart(fig4, use_container_width=True)
+
+st.info(
+    "💡 **이 그래프로 알 수 있는 것:** "
+    "개봉일 스크린수가 많을수록 대체로 총 관객수도 증가하는 비례 관계를 보이지만, "
+    "적은 스크린수로 시작해 입소문으로 높은 흥행을 거둔 이외작이나 초기 스크린 대비 아쉬운 성적을 거둔 사례도 함께 확인 가능함."
 )
