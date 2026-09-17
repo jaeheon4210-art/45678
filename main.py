@@ -76,7 +76,7 @@ st.divider()
 # ==========================================
 st.header("🌳 섹션 2. 장르 및 영화별 총 관객 수 분포 (트리맵)")
 
-# 트리맵용 데이터 정제: 총 관객 수가 0보다 크고 장르-영화명 중복이 없도록 그룹화 집계
+# 트리맵용 데이터 정제 (총 관객 수 0 초과 및 중복 처리)
 treemap_df = (
     df[df["total_audi"] > 0]
     .groupby(["genre", "movieNm"], as_index=False)["total_audi"]
@@ -104,4 +104,44 @@ st.plotly_chart(fig2, use_container_width=True)
 st.info(
     "💡 **이 그래프로 알 수 있는 것:** "
     "장르별 전체 관객 수 규모와 함께 각 장르 내부에서 특정 대형 흥행작이 차지하는 관객 독점 비율을 면적 크기로 직관적으로 비교할 수 있음."
+)
+
+st.divider()
+
+# ==========================================
+# 📌 구역 3: 총 관객 수 분포 (히스토그램)
+# ==========================================
+st.header("📊 섹션 3. 총 관객 수 분포 (히스토그램)")
+
+# 최다 관객 동원 영화 자동 추출
+top_movie_row = df.loc[df["total_audi"].idxmax()]
+top_movie_name = top_movie_row["movieNm"]
+top_movie_audi = top_movie_row["total_audi"]
+
+# Plotly 히스토그램 생성
+fig3 = px.histogram(
+    df,
+    x="total_audi",
+    nbins=30,
+    title="🎟️ 개봉작 총 관객 수 구간별 분포",
+    labels={"total_audi": "총 관객 수 (명)", "count": "영화 수"},
+    color_discrete_sequence=["#636EFA"]
+)
+
+fig3.update_traces(
+    hovertemplate="<b>관객 수 구간:</b> %{x}명<br><b>영화 수:</b> %{y}편<extra></extra>"
+)
+
+fig3.update_layout(
+    xaxis_title="총 관객 수 (명)",
+    yaxis_title="영화 수 (편)",
+    bargap=0.1
+)
+
+st.plotly_chart(fig3, use_container_width=True)
+
+st.info(
+    f"💡 **이 그래프로 알 수 있는 것:** "
+    f"대부분의 영화가 관객 수 50만 명 이하의 하위 구간에 밀집해 있는 극단적인 롱테일 양상을 보임. "
+    f"기간 내 가장 많은 관객을 동원한 최상위 영화는 '{top_movie_name}'({top_movie_audi:,}명)임."
 )
